@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  chic-boutique-kc:
+    build:
+      context: .
+    container_name: chic-boutique-kc
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_USER=v500
+      - DB_PASSWORD=v500
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=chic_boutique_kc
+      - PORT=8080
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    restart: always
+  
+  postgres-db:
+    image: postgres
+    container_name: postgres-db
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=v500
+      - POSTGRES_USER=v500
+      - POSTGRES_DB=chic_boutique_kc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U v500 -d chic_boutique_kc"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
